@@ -1,4 +1,4 @@
-using namespace LoginServer.Settings;
+namespace LoginServer.Settings;
 
 public class CosmosDbSettings
 {
