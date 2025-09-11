@@ -53,3 +53,7 @@ CodeCoverage/
 TestResult.xml
 nunit-*.xml
 .fake
+
+# Appsettins
+appsettings.json
+appsettings.Development.json
