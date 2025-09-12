@@ -18,17 +18,34 @@ builder.Services.AddSwaggerGen();
 
 // For cosmosDb connection
 // The Cosmos connection string
-var connectionString = builder.Configuration.GetConnectionString("ApplicationDbContextConnection");
+var connectionString = builder.Configuration.GetConnectionString("CosmosDbConnection");
 
 // Name of the Cosmos database to use
 var cosmosIdentityDbName = builder.Configuration.GetValue<string>("CosmosIdentityDbName");
 
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseCosmos(connectionString: connectionString, databaseName: cosmosIdentityDbName));
+var setupCosmosDb = builder.Configuration.GetValue<string>("SetupCosmosDb");
 
-builder.Services.AddCosmosIdentity<ApplicationDbContext, IdentityUser, IdentityRole, string>(
-      options => options.SignIn.RequireConfirmedAccount = true // Always a good idea :)
-    )
+Console.WriteLine($"CosmosIdentityDbName: {cosmosIdentityDbName}, ConnectionString: {connectionString}");
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+{
+    options.UseCosmos(
+        connectionString: connectionString,
+        databaseName: cosmosIdentityDbName
+    );
+});
+
+
+builder.Services.AddCosmosIdentity<ApplicationDbContext, IdentityUser, IdentityRole, string>(options =>
+        {
+            options.SignIn.RequireConfirmedAccount = true; // Always a good idea :)
+            // options.Password.RequireDigit = true; // 비밀번호에 숫자를 포함해야 함
+            // options.Password.RequireLowercase = true; // 비밀번호에 소문자를 포함해야 함
+            // options.Password.RequireUppercase = true; // 비밀번호에 대문자를 포함해야 함
+            // options.Password.RequireNonAlphanumeric = true; // 비밀번호에 특수 문자를 포함해야 함
+            // options.Password.RequiredLength = 8; // 비밀번호의 최소 길이는 8자
+            // options.Password.RequiredUniqueChars = 1; // 비밀번호에 필요한 고유 문자 
+        })
     .AddDefaultUI() // Use this if Identity Scaffolding is in use
     .AddDefaultTokenProviders();
 

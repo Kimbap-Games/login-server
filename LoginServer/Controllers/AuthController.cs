@@ -40,8 +40,11 @@ namespace LoinServer.Controllers
             };
             var result = await _userManager.CreateAsync(user, model.Password);
             if (!result.Succeeded)
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Status = "Error", Message = "사용자 생성에 실패했습니다! 비밀번호 요구사항을 확인하세요." });
-
+            {
+                // 🚨 이 부분이 오류의 실제 내용을 추출하는 핵심 코드입니다.
+                var errors = result.Errors.Select(e => e.Description);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Status = "Error", Message = string.Join(", ", errors) });
+            }
             return Ok(new { Status = "Success", Message = "사용자가 성공적으로 생성되었습니다!" });
         }
 
