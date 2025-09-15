@@ -23,8 +23,6 @@ var connectionString = builder.Configuration.GetConnectionString("CosmosDbConnec
 // Name of the Cosmos database to use
 var cosmosIdentityDbName = builder.Configuration.GetValue<string>("CosmosIdentityDbName");
 
-var setupCosmosDb = builder.Configuration.GetValue<string>("SetupCosmosDb");
-
 Console.WriteLine($"CosmosIdentityDbName: {cosmosIdentityDbName}, ConnectionString: {connectionString}");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
