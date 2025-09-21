@@ -5,9 +5,7 @@ using AspNetCore.Identity.CosmosDb.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 
-using LoginServer.Models;
-using LoginServer.Settings;
-using LoginServer.Azure;
+using LoginServer.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 

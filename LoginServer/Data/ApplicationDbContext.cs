@@ -1,10 +1,7 @@
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-
-using AspNetCore.Identity.CosmosDb;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
-namespace LoginServer.Azure
+namespace LoginServer.Data
 {
     public class ApplicationDbContext : IdentityDbContext
     {
