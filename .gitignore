@@ -56,3 +56,4 @@ nunit-*.xml
 
 # secrets
 secrets.json
+appsettings.json

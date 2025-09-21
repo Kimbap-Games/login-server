@@ -16,36 +16,26 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// For cosmosDb connection
-// The Cosmos connection string
-var connectionString = builder.Configuration.GetConnectionString("CosmosDbConnection");
-
-// Name of the Cosmos database to use
-var cosmosIdentityDbName = builder.Configuration.GetValue<string>("CosmosIdentityDbName");
-
-Console.WriteLine($"CosmosIdentityDbName: {cosmosIdentityDbName}, ConnectionString: {connectionString}");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(connectionString));
+
+
+builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 {
-    options.UseCosmos(
-        connectionString: connectionString,
-        databaseName: cosmosIdentityDbName
-    );
-});
-
-
-builder.Services.AddCosmosIdentity<ApplicationDbContext, IdentityUser, IdentityRole, string>(options =>
-        {
-            options.SignIn.RequireConfirmedAccount = true; // Always a good idea :)
-            // options.Password.RequireDigit = true; // 비밀번호에 숫자를 포함해야 함
-            // options.Password.RequireLowercase = true; // 비밀번호에 소문자를 포함해야 함
-            // options.Password.RequireUppercase = true; // 비밀번호에 대문자를 포함해야 함
-            // options.Password.RequireNonAlphanumeric = true; // 비밀번호에 특수 문자를 포함해야 함
-            // options.Password.RequiredLength = 8; // 비밀번호의 최소 길이는 8자
-            // options.Password.RequiredUniqueChars = 1; // 비밀번호에 필요한 고유 문자 
-        })
-    .AddDefaultUI() // Use this if Identity Scaffolding is in use
+    options.Password.RequireDigit = true;
+    options.Password.RequiredLength = 8;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequireLowercase = false;
+})
+    .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
+
+builder.Services.AddAuthentication();
+builder.Services.AddAuthorization();
+builder.Services.AddControllers();
 
 var app = builder.Build();
 
