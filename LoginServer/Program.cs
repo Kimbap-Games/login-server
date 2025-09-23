@@ -8,6 +8,7 @@ using LoginServer.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
+//Azure App Service에서 사용하는 포트를 자동으로 적용하도록
 var port = Environment.GetEnvironmentVariable("PORT");
 if (!string.IsNullOrEmpty(port))
 {
@@ -60,6 +61,7 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 app.UseAuthentication();
 
+// 기본 서버 접속 체크용 API
 app.MapGet("/", () => "Hello from Login Server! The app is running.");
 
 app.MapControllers();
