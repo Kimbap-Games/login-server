@@ -1,48 +1,69 @@
-using AspNetCore.Identity.CosmosDb;
-using AspNetCore.Identity.CosmosDb.Containers;
-using AspNetCore.Identity.CosmosDb.Extensions;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 
-using LoginServer.Models;
-using LoginServer.Settings;
-using LoginServer.Azure;
+using Azure.Identity;
+using Azure.Extensions.AspNetCore.Configuration.Secrets;
+
+using LoginServer.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
+//Azure App Service에서 사용하는 포트를 자동으로 적용하도록
+var port = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrEmpty(port))
+{
+    builder.WebHost.UseUrls($"http://*:{port}");
+}
+
+// Add services to the container.
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// For cosmosDb connection
-// The Cosmos connection string
-var connectionString = builder.Configuration.GetConnectionString("ApplicationDbContextConnection");
+var keyVaultUrl = builder.Configuration["KeyVaultUrl"];
 
-// Name of the Cosmos database to use
-var cosmosIdentityDbName = builder.Configuration.GetValue<string>("CosmosIdentityDbName");
+if (!string.IsNullOrEmpty(keyVaultUrl))
+{
+    builder.Configuration.AddAzureKeyVault(
+        new Uri(keyVaultUrl),
+        new DefaultAzureCredential());
+}
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseCosmos(connectionString: connectionString, databaseName: cosmosIdentityDbName));
+    options.UseSqlServer(connectionString));
 
-builder.Services.AddCosmosIdentity<ApplicationDbContext, IdentityUser, IdentityRole, string>(
-      options => options.SignIn.RequireConfirmedAccount = true // Always a good idea :)
-    )
-    .AddDefaultUI() // Use this if Identity Scaffolding is in use
+
+builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
+{
+    options.Password.RequireDigit = true;
+    options.Password.RequiredLength = 8;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequireLowercase = false;
+})
+    .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
+
+builder.Services.AddAuthentication();
+builder.Services.AddAuthorization();
+builder.Services.AddControllers();
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
 app.UseAuthentication();
+
+// 기본 서버 접속 체크용 API
+app.MapGet("/", () => "Hello from Login Server! The app is running.");
+
 app.MapControllers();
 
 app.Run();
